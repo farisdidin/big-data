@@ -10,36 +10,24 @@ logger = logging.getLogger(__name__)
  
 from flask import Flask, request
  
-@main.route("/<int:user_id>/ratings/top/<int:count>", methods=["GET"])
+@main.route("/<int:userId>/ratings/top/<int:movieId>", methods=["GET"])
 def top_ratings(user_id, count):
-    logger.debug("User %s TOP ratings requested", user_id)
-    top_ratings = recommendation_engine.get_top_ratings(user_id,count)
+    logger.debug("User %s TOP ratings requested", userId)
+    top_ratings = recommendation_engine.get_top_ratings(userId,count)
     return json.dumps(top_ratings)
 
-@main.route("/<int:anime_id>/animes/top/<int:count>", methods=["GET"])
-def top_anime_ratings(anime_id, count):
-    logger.debug("animes %s TOP remcomended User", anime_id)
-    anime_top = recommendation_engine.get_anime_top_ratings(anime_id,count)
-    return json.dumps(anime_top) 
 
-@main.route("/<int:user_id>/ratings/<int:anime_id>", methods=["GET"])
-def anime_ratings(user_id, anime_id):
-    logger.debug("User %s rating requested for anime %s", user_id, anime_id)
-    ratings = recommendation_engine.get_ratings_for_anime_ids(user_id, anime_id)
+@main.route("/<int:userId>/ratings/<int:movieId>", methods=["GET"])
+def anime_ratings(userId, movieId):
+    logger.debug("User %s rating requested for anime %s", userId, movieId)
+    ratings = recommendation_engine.get_ratings_for_movie_ids(userId, movieId)
     return json.dumps(ratings)
+    # userId = str(userId)
+    # movieId = str(movieId)
+    # return userId+" "+movieId
  
  
-@main.route("/<int:user_id>/rate", methods = ["POST"])
-def add_ratings(user_id):
-    # get the ratings from the Flask POST request object
-    anime_id = int(request.form.get('anime_id'))
-    ratings = int(request.form.get('ratings'))
-    # print(animeId_fetched)
-    # print(ratings_fetched)
-    # add them to the model using then engine API
-    new_rating = recommendation_engine.add_ratings(user_id, anime_id, ratings)
- 
-    return json.dumps(new_rating)
+
  
  
 def create_app(spark_context, dataset_path):

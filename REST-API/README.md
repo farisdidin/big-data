@@ -8,3 +8,9 @@ aplikasi terdiri dari :
 - server.py : sebagai penghubung antara app.py dan engine.py, server berjalan menggunakan cherrypy.
 
 
+## PENGGUNAAN  
+- /{userId}/ratings/{movieId}
+```
+curl http://localhost:5432/24/ratings/45
+```  
+![alt](./img/getRatings.png)

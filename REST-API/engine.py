@@ -24,51 +24,30 @@ class RecommendationEngine:
         
         logger.info("ALS model built!")
 
-    def add_ratings(self, user_id, anime_id, ratings):
-        """Add additional anime ratings in the format (user_id, anime_id, rating)
-        """
-        # Convert ratings to an RDD
-        new_ratings = self.spark.createDataFrame([(user_id, anime_id, ratings)],["user_id", "anime_id", "rating"])
-        # Add new ratings to the existing ones
-        self.ratings = self.ratings.union(new_ratings)
-        # Re-train the ALS model with the new ratings
-        self.__train_model()
-        new_ratings = new_ratings.toPandas()
-        new_ratings = new_ratings.to_json()
-        return new_ratings
 
-    def get_ratings_for_anime_ids(self, user_id, anime_id):
+    def get_ratings_for_movie_ids(self, userId, movieId):
         """Given a user_id and a list of anime_ids, predict ratings for them 
         """
 
-        dataframe = self.spark.createDataFrame([(user_id, anime_id)], ["user_id", "anime_id"])
+        dataframe = self.spark.createDataFrame([(userId, movieId)], ["userId", "movieId"])
         predictions = self.model.transform(dataframe)
         ratings = predictions.toPandas()
         ratings = ratings.to_json()
 
         return ratings
     
-    def get_top_ratings(self, user_id, animes_count):
+    def get_top_ratings(self, userId, animes_count):
         """Recommends up to animes_count top unrated animes to user_id
         """
         users = self.ratings.select(self.als.getUserCol()).distinct()
-        users = users.filter(users.user_id == user_id)
+        users = users.filter(users.userId == userId)
         top_ratings = self.model.recommendForUserSubset(users,animes_count)
 
         self.json_top = top_ratings.toPandas()
         self.json_top = self.json_top.to_json()
         return self.json_top
 
-    def get_anime_top_ratings(self, anime_id, users_count):
-        """Recommends up to animes_count top unrated animes to user_id
-        """
-        animes = self.ratings.select(self.als.getItemCol()).distinct()
-        animes = animes.filter(animes.anime_id == anime_id)
-        anime_top = self.model.recommendForItemSubset(animes,users_count)
 
-        self.json_top = anime_top.toPandas()
-        self.json_top = self.json_top.to_json()
-        return self.json_top
 
     def __init__(self, spark, dataset_path):
         """Init the recommendation engine given a Spark context and a dataset path
